@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+        canvas {
+            background: black;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="1024" height="720"></canvas>
+    <script>
+        let canvas = document.getElementById("myCanvas");
+        let ctx = canvas.getContext("2d");
+        let x = canvas.width / 2;
+        let y = canvas.height - 30;
+        let dx = 4;
+        let dy = -4;
+        let ballRadius = 10;
+        let leftPaddleHeight = rightPaddleHeight = 90;
+        let leftPaddleWidth = rightPaddleWidth = 15;
+        let leftPaddleX = 5;
+        let leftPaddleY = canvas.height / 2 - leftPaddleHeight / 2;
+        let rightPaddleX = canvas.width - (rightPaddleWidth + 5);
+        let rightPaddleY = canvas.height / 2 - rightPaddleHeight / 2;
+        let leftUpPressed = leftDownPressed = rightUpPressed = rightDownPressed = false;
+        let leftScore = rightScore = 0;
+
+        let keyDownHandler = (e) => {
+
+            if (e.keyCode == 87) {
+
+                leftUpPressed = true;
+            } else if (e.keyCode == 83) {
+
+                leftDownPressed = true;
+            }
+            if (e.keyCode == 38) {
+
+                rightUpPressed = true;
+            } else if (e.keyCode == 40) {
+
+                rightDownPressed = true;
+            }
+        }
+
+        let keyUpHandler = (e) => {
+
+            if (e.keyCode == 87) {
+
+                leftUpPressed = false;
+            } else if (e.keyCode == 83) {
+
+                leftDownPressed = false;
+            }
+            if (e.keyCode == 38) {
+
+                rightUpPressed = false;
+            } else if (e.keyCode == 40) {
+
+                rightDownPressed = false;
+            }
+        }
+
+        let drawBall = () => {
+
+            ctx.beginPath();
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        let drawScores = () => {
+
+            ctx.font = "80px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText(leftScore, (canvas.width / 2) - 80, 80);
+            ctx.fillText(rightScore, (canvas.width / 2) + 40, 80);
+        }
+
+        let collisionsWithLeftPaddle = () => {
+
+            if ((x - ballRadius) <= 5 + leftPaddleWidth) {
+                if (y > leftPaddleY && y < leftPaddleY + leftPaddleHeight)
+                    dx = -dx;
+                else if ((x - ballRadius) <= 0) {
+                    rightScore++;
+                    //alert("Game Over");
+                    x = canvas.width / 2;
+                    y = canvas.height / 2;
+                    dx = -dx;
+                    dy = -dy;
+                }
+            }
+        }
+
+        let collisionsWithRightPaddle = () => {
+
+            if ((x + ballRadius) >= canvas.width - (rightPaddleWidth + 5)) {
+                if (y > rightPaddleY && y < rightPaddleY + rightPaddleHeight)
+                    dx = -dx;
+                else if (x + ballRadius >= canvas.width) {
+                    leftScore++;
+                    x = canvas.width / 2;
+                    y = canvas.height / 2;
+                    dx = -dx;
+                    dy = -dy;
+                }
+            }
+        }
+
+        let computeCollisionsWithWallsAndPaddle = () => {
+
+            collisionsWithLeftPaddle();
+            collisionsWithRightPaddle();
+            if (((y - ballRadius) <= 0) || ((y + ballRadius) >= canvas.height)) {
+                dy = -dy;
+            }
+        }
+
+        let drawLeftPaddle = () => {
+
+            ctx.beginPath();
+            ctx.rect(leftPaddleX, leftPaddleY, leftPaddleWidth, leftPaddleHeight);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
+            if (leftDownPressed && leftPaddleY < canvas.height - leftPaddleHeight) {
+                leftPaddleY += 7;
+            } else if (leftUpPressed && leftPaddleY > 0) {
+                leftPaddleY -= 7;
+            }
+        }
+
+        let drawRightPaddle = () => {
+
+            ctx.beginPath();
+            ctx.rect(rightPaddleX, rightPaddleY, rightPaddleWidth, rightPaddleHeight);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
+            if (rightDownPressed && rightPaddleY < canvas.height - rightPaddleHeight) {
+                rightPaddleY += 7;
+            } else if (rightUpPressed && rightPaddleY > 0) {
+                rightPaddleY -= 7;
+            }
+        }
+
+        let drawScene = () => {
+
+            ctx.beginPath();
+            ctx.rect(canvas.width / 2 - 1, 0, 3, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        let draw = () => {
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawScores();
+            drawScene();
+            drawLeftPaddle();
+            drawRightPaddle();
+            drawBall();
+            computeCollisionsWithWallsAndPaddle();
+            x += dx;
+            y += dy;
+        }
+
+        setInterval(draw, 10);
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+    </script>
+</body>
+
+</html>
